@@ -3,13 +3,14 @@ import random
 import threading
 
 # Ustawienia gry
-SCREEN_WIDTH = 640
-SCREEN_HEIGHT = 480
+SCREEN_WIDTH = 1840
+SCREEN_HEIGHT = 1000
 BLOCK_SIZE = 20
 NUM_BLOCKS_X = SCREEN_WIDTH // BLOCK_SIZE
 NUM_BLOCKS_Y = SCREEN_HEIGHT // BLOCK_SIZE
 PANDMAN_SPEED = 1
-GHOST_SPEED = 0
+GHOST_SPEED = 1
+GHOST_AIM = 0.5
 NUM_GHOSTS = 4
 
 # Kolory
@@ -35,15 +36,15 @@ class PandmanGame:
         
         self.pandman = Pandman(self)
         
-        # self.ghosts = []
-        # for idx in range(NUM_GHOSTS):
-        #     self.ghosts.append(Ghost(self, idx, idx))
+        self.ghosts = []
+        for _ in range(NUM_GHOSTS):
+            self.ghosts.append(Ghost(self))
         
         self.blocks = []
         for x in range(NUM_BLOCKS_X):
             for y in range(NUM_BLOCKS_Y):
                 if (x == 0 or x == NUM_BLOCKS_X - 1 or y == 0 or y == NUM_BLOCKS_Y - 1) or (random.random() < 0.2):
-                    self.blocks.append(Block(x, y))
+                    self.blocks.append(Block(x, y)) 
                     
     def get_block(self, x, y):
         for block in self.blocks:
@@ -58,15 +59,15 @@ class PandmanGame:
     def update(self):
         self.pandman.update()
         
-        # for ghost in self.ghosts:
-        #     ghost.update()
+        for ghost in self.ghosts:
+            ghost.update()
         
-        for block in self.blocks:
-            if self.pandman.collides_with(block):
-                self.pandman.undo_move()
-        #     for ghost in self.ghosts:
-        #         if ghost.collides_with(block):
-        #             ghost.undo_move()
+        # for block in self.blocks:
+        #     if self.pandman.collides_with(block):
+        #         self.pandman.undo_move()
+            # for ghost in self.ghosts:
+            #     if ghost.collides_with(block):
+            #         ghost.undo_move()
     
     def draw(self):
         screen.fill(BLACK)
@@ -76,8 +77,8 @@ class PandmanGame:
         for block in self.blocks:
             block.draw()
         
-        # for ghost in self.ghosts:
-        #     ghost.draw()
+        for ghost in self.ghosts:
+            ghost.draw()
             
         pygame.display.flip()
     
@@ -130,18 +131,67 @@ class Pandman:
                 self.y = temp_y
             else:
                  self.y = 0
-                 
-            
-        # if self.game.get_block(self.next_x, self.next_y) is not None:
-        #     # ruch na pole z blokadą
-        #     return
 
-    def collides_with(self, other):
-        return self.x == other.x and self.y == other.y
+    # def collides_with(self, other):
+    #     return self.x == other.x and self.y == other.y
 
     def draw(self):
         rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
         pygame.draw.rect(screen, YELLOW, rect)
+        
+class Ghost:
+    def __init__(self, game, x=None, y=None):
+        self.x = x if x else random.randint(0, NUM_BLOCKS_X - 1)
+        self.y = y if y else random.randint(0, NUM_BLOCKS_Y - 1)
+        self.game = game
+        
+    def update(self):
+        dx, dy = self.get_next_move()
+        temp_x = self.x + dx * GHOST_SPEED
+        temp_y = self.y + dy* GHOST_SPEED
+        
+        if self.game.get_block(temp_x, temp_y) is None:
+            self.x = temp_x
+            self.y = temp_y
+        if self.game.get_block(temp_x, self.y) is None:
+            self.x = temp_x
+        elif self.game.get_block(self.x, temp_y) is None:
+            self.y = temp_y
+            
+              
+    # Metoda rysująca duszka na ekranie
+    def draw(self):
+        rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+        pygame.draw.rect(screen, RED, rect)
+
+    # Metoda sprawdzająca kolizję duszka z innym obiektem
+    # def collides_with(self, other):
+    #     return self.x == other.x and self.y == other.y
+
+    # Metoda zwracająca następny ruch duszka
+    def get_next_move(self):
+        with self.game.lock:
+            pac_x = self.game.pandman.x
+            pac_y = self.game.pandman.y
+        dx = dy = 0
+        
+        rand = False
+        if random.random() > GHOST_AIM:
+            rand = True
+            
+        if self.x < pac_x:
+            dx = 1
+        elif self.x > pac_x:
+            dx = -1
+        if self.y < pac_y:
+            dy = 1
+        elif self.y > pac_y:
+            dy = -1
+            
+        if random.random() > 0.5:
+            return (dx, 0) if not rand else (-dx, 0)
+        else:
+            return (0, dy) if not rand else (0, -dy)
 
 # Klasa reprezentująca blok w grze
 class Block:
