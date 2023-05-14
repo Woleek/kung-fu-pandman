@@ -14,6 +14,9 @@ PANDMAN_SPEED = 1
 GHOST_SPEED = 1
 GHOST_AIM = 0.8
 NUM_GHOSTS = 4
+NOODLE_REST = 30
+LIFE = 5
+game_over_img = pygame.transform.scale(pygame.image.load('images/over.png'), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Kolory
 BLACK = (0, 0, 0)

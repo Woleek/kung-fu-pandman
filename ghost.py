@@ -1,13 +1,16 @@
 from settings import *
 
-class Ghost():
-    def __init__(self, game, x=None, y=None):
+class Ghost(threading.Thread):
+    def __init__(self, game, x=None, y=None, name='Ghost'):
+        self.gname = name
         self.x = x if x else random.randint(0, NUM_BLOCKS_X - 1)
         self.y = y if y else random.randint(0, NUM_BLOCKS_Y - 1)
         self.game = game
+        threading.Thread.__init__(self) 
         
     def update(self):
         with self.game.lock:
+            # print(f"{self.gname} entered critical update section")
             dx, dy = self.get_next_move()
             temp_x = self.x + dx * GHOST_SPEED
             temp_y = self.y + dy* GHOST_SPEED
@@ -25,11 +28,13 @@ class Ghost():
     def draw(self):
         rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
         with self.game.lock:
+            # print(f"{self.gname} entered critical draw section")
             pygame.draw.rect(self.game.screen, RED, rect)
 
     # Metoda sprawdzająca kolizję duszka z innym obiektem
     def collides_with(self, other):
-        return self.x == other.x and self.y == other.y
+        with self.game.lock: 
+            return self.x == other.x and self.y == other.y
 
     # Metoda zwracająca następny ruch duszka
     def get_next_move(self):
