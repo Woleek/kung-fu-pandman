@@ -1,19 +1,20 @@
 from settings import *
 
-class Ghost(threading.Thread):
-    def __init__(self, game, x=None, y=None, name='Ghost'):
+class Jombie(threading.Thread):
+    def __init__(self, game, x=None, y=None, name='Jombie'):
+        threading.Thread.__init__(self) 
         self.gname = name
         self.x = x if x else random.randint(0, NUM_BLOCKS_X - 1)
         self.y = y if y else random.randint(0, NUM_BLOCKS_Y - 1)
         self.game = game
-        threading.Thread.__init__(self) 
+        self.image = pygame.transform.scale(pygame.image.load('images/jombie.png'), (BLOCK_SIZE, BLOCK_SIZE))
         
     def update(self):
         with self.game.lock:
             # print(f"{self.gname} entered critical update section")
             dx, dy = self.get_next_move()
-            temp_x = self.x + dx * GHOST_SPEED
-            temp_y = self.y + dy* GHOST_SPEED
+            temp_x = self.x + dx * JOMBIE_SPEED
+            temp_y = self.y + dy* JOMBIE_SPEED
             
             if self.game.get_block(temp_x, temp_y) is None:
                 self.x = temp_x
@@ -26,10 +27,9 @@ class Ghost(threading.Thread):
               
     # Metoda rysująca duszka na ekranie
     def draw(self):
-        rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+        self.rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
         with self.game.lock:
-            # print(f"{self.gname} entered critical draw section")
-            pygame.draw.rect(self.game.screen, RED, rect)
+            self.game.screen.blit(self.image, self.rect)
 
     # Metoda sprawdzająca kolizję duszka z innym obiektem
     def collides_with(self, other):
@@ -43,7 +43,7 @@ class Ghost(threading.Thread):
         dx = dy = 0
         
         rand = False
-        if random.random() > GHOST_AIM:
+        if random.random() > JOMBIE_AIM:
             rand = True
             
         if self.x < pac_x:

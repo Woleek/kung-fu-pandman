@@ -2,10 +2,11 @@ from settings import *
 
 class Pandman(threading.Thread):
     def __init__(self, game):
+        threading.Thread.__init__(self)  
         self.x = NUM_BLOCKS_X // 2
         self.y = NUM_BLOCKS_Y // 2
         self.game = game
-        threading.Thread.__init__(self)   
+        self.image = pygame.transform.scale(pygame.image.load('images/pandman.png'), (BLOCK_SIZE, BLOCK_SIZE))
         
     def update(self):
         keys = pygame.key.get_pressed()
@@ -55,7 +56,6 @@ class Pandman(threading.Thread):
         
     
     def draw(self):
-        rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+        self.rect = pygame.Rect(self.x * BLOCK_SIZE, self.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
         with self.game.lock:
-            # print("Pandman entered critical draw section")
-            pygame.draw.rect(self.game.screen, YELLOW, rect)
+            self.game.screen.blit(self.image, self.rect)
