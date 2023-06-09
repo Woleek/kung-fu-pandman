@@ -1,4 +1,4 @@
-<p align="center"># ![pandman](https://github.com/Woleek/kung-fu-pandman/assets/84938240/73506f5f-ab74-4af0-acb5-e4aa2eaa0b3b) kung-fu-pandman</p>
+# ![pandman](https://github.com/Woleek/kung-fu-pandman/assets/84938240/73506f5f-ab74-4af0-acb5-e4aa2eaa0b3b) kung-fu-pandman
    
 Game made with PyGame module to explore threading usage in Python. It's a modified game of Pacman, that has some of it's original functionalities and same new ones....and it looks like Kung Fu Panda.   
    
